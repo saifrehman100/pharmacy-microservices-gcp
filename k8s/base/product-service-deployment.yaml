@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: product-service
+  namespace: pharmacy-system
+  labels:
+    app: product-service
+    tier: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: product-service
+  template:
+    metadata:
+      labels:
+        app: product-service
+        tier: backend
+    spec:
+      containers:
+      - name: product-service
+        image: gcr.io/YOUR_PROJECT_ID/product-service:latest
+        ports:
+        - containerPort: 8001
+          name: http
+        env:
+        - name: ENVIRONMENT
+          valueFrom:
+            configMapKeyRef:
+              name: pharmacy-config
+              key: ENVIRONMENT
+        - name: PRODUCT_SERVICE_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: pharmacy-config
+              key: PRODUCT_SERVICE_PORT
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: pharmacy-secrets
+              key: PRODUCT_DATABASE_URL
+        - name: DEFAULT_PAGE_SIZE
+          valueFrom:
+            configMapKeyRef:
+              name: pharmacy-config
+              key: DEFAULT_PAGE_SIZE
+        - name: MAX_PAGE_SIZE
+          valueFrom:
+            configMapKeyRef:
+              name: pharmacy-config
+              key: MAX_PAGE_SIZE
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8001
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8001
+          initialDelaySeconds: 10
+          periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: product-service
+  namespace: pharmacy-system
+  labels:
+    app: product-service
+spec:
+  type: ClusterIP
+  selector:
+    app: product-service
+  ports:
+  - port: 8001
+    targetPort: 8001
+    protocol: TCP
+    name: http

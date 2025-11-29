@@ -205,3 +205,32 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Project Specific
+# Docker
+.docker/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+logs/
+
+# GCP Credentials
+gcp-credentials.json
+*-key.json
+
+# Environment files
+.env.local
+*.env
+
+# MacOS
+.DS_Store

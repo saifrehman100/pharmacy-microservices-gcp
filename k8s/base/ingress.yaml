@@ -1,0 +1,33 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: pharmacy-ingress
+  namespace: pharmacy-system
+  annotations:
+    kubernetes.io/ingress.class: "gce"
+    # Use Google-managed SSL certificates
+    networking.gke.io/managed-certificates: "pharmacy-ssl-cert"
+    # Enable Cloud CDN (optional)
+    # cloud.google.com/backend-config: '{"default": "pharmacy-backend-config"}'
+spec:
+  rules:
+  - host: api.pharmacy-system.example.com  # Replace with your domain
+    http:
+      paths:
+      - path: /*
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: api-gateway
+            port:
+              number: 80
+---
+# Managed Certificate for HTTPS
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: pharmacy-ssl-cert
+  namespace: pharmacy-system
+spec:
+  domains:
+    - api.pharmacy-system.example.com  # Replace with your domain
