@@ -1,0 +1,191 @@
+name: Build and Deploy to GKE
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'services/**'
+      - 'k8s/**'
+      - '.github/workflows/**'
+
+env:
+  PROJECT_ID: pharmacy-ms-458074
+  GKE_CLUSTER: pharmacy-cluster
+  GKE_ZONE: us-central1-a
+  REGION: us-central1
+  REPOSITORY: pharmacy-services
+
+jobs:
+  setup-build-publish-deploy:
+    name: Setup, Build, Publish, and Deploy
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Authenticate to Google Cloud
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
+
+    - name: Configure Docker to use gcloud as credential helper
+      run: |
+        gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
+
+    - name: Get GKE credentials
+      run: |
+        gcloud container clusters get-credentials ${{ env.GKE_CLUSTER }} \
+          --zone ${{ env.GKE_ZONE }} \
+          --project ${{ env.PROJECT_ID }}
+
+    # Detect which services changed
+    - name: Detect changed services
+      id: changes
+      run: |
+        echo "Detecting changed services..."
+
+        # Get list of changed files
+        if [ "${{ github.event.before }}" == "0000000000000000000000000000000000000000" ]; then
+          # First push - build all services
+          echo "api_gateway=true" >> $GITHUB_OUTPUT
+          echo "product_service=true" >> $GITHUB_OUTPUT
+          echo "order_service=true" >> $GITHUB_OUTPUT
+          echo "inventory_service=true" >> $GITHUB_OUTPUT
+        else
+          # Check which services changed
+          CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+
+          if echo "$CHANGED_FILES" | grep -q "services/api-gateway/"; then
+            echo "api_gateway=true" >> $GITHUB_OUTPUT
+          fi
+
+          if echo "$CHANGED_FILES" | grep -q "services/product-service/"; then
+            echo "product_service=true" >> $GITHUB_OUTPUT
+          fi
+
+          if echo "$CHANGED_FILES" | grep -q "services/order-service/"; then
+            echo "order_service=true" >> $GITHUB_OUTPUT
+          fi
+
+          if echo "$CHANGED_FILES" | grep -q "services/inventory-service/"; then
+            echo "inventory_service=true" >> $GITHUB_OUTPUT
+          fi
+        fi
+
+    # Build and Push API Gateway
+    - name: Build and Push API Gateway
+      if: steps.changes.outputs.api_gateway == 'true'
+      run: |
+        IMAGE_TAG="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/api-gateway"
+
+        docker build \
+          -t ${IMAGE_TAG}:latest \
+          -t ${IMAGE_TAG}:${{ github.sha }} \
+          ./services/api-gateway
+
+        docker push ${IMAGE_TAG}:latest
+        docker push ${IMAGE_TAG}:${{ github.sha }}
+
+    # Build and Push Product Service
+    - name: Build and Push Product Service
+      if: steps.changes.outputs.product_service == 'true'
+      run: |
+        IMAGE_TAG="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/product-service"
+
+        docker build \
+          -t ${IMAGE_TAG}:latest \
+          -t ${IMAGE_TAG}:${{ github.sha }} \
+          ./services/product-service
+
+        docker push ${IMAGE_TAG}:latest
+        docker push ${IMAGE_TAG}:${{ github.sha }}
+
+    # Build and Push Order Service
+    - name: Build and Push Order Service
+      if: steps.changes.outputs.order_service == 'true'
+      run: |
+        IMAGE_TAG="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/order-service"
+
+        docker build \
+          -t ${IMAGE_TAG}:latest \
+          -t ${IMAGE_TAG}:${{ github.sha }} \
+          ./services/order-service
+
+        docker push ${IMAGE_TAG}:latest
+        docker push ${IMAGE_TAG}:${{ github.sha }}
+
+    # Build and Push Inventory Service
+    - name: Build and Push Inventory Service
+      if: steps.changes.outputs.inventory_service == 'true'
+      run: |
+        IMAGE_TAG="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/inventory-service"
+
+        docker build \
+          -t ${IMAGE_TAG}:latest \
+          -t ${IMAGE_TAG}:${{ github.sha }} \
+          ./services/inventory-service
+
+        docker push ${IMAGE_TAG}:latest
+        docker push ${IMAGE_TAG}:${{ github.sha }}
+
+    # Deploy to GKE
+    - name: Deploy to GKE
+      run: |
+        # Apply K8s manifests
+        kubectl apply -f k8s/base/namespace.yaml
+        kubectl apply -f k8s/base/configmap.yaml
+        kubectl apply -f k8s/base/service-account.yaml
+        kubectl apply -f k8s/base/databases.yaml
+
+        # Deploy services (if changed)
+        if [ "${{ steps.changes.outputs.api_gateway }}" == "true" ]; then
+          kubectl rollout restart deployment api-gateway -n pharmacy-system
+        fi
+
+        if [ "${{ steps.changes.outputs.product_service }}" == "true" ]; then
+          kubectl rollout restart deployment product-service -n pharmacy-system
+        fi
+
+        if [ "${{ steps.changes.outputs.order_service }}" == "true" ]; then
+          kubectl rollout restart deployment order-service -n pharmacy-system
+        fi
+
+        if [ "${{ steps.changes.outputs.inventory_service }}" == "true" ]; then
+          kubectl rollout restart deployment inventory-service -n pharmacy-system
+        fi
+
+    # Wait for deployments to be ready
+    - name: Verify Deployment
+      run: |
+        kubectl get pods -n pharmacy-system
+
+        # Wait for deployments if any service changed
+        if [ "${{ steps.changes.outputs.api_gateway }}" == "true" ] || \
+           [ "${{ steps.changes.outputs.product_service }}" == "true" ] || \
+           [ "${{ steps.changes.outputs.order_service }}" == "true" ] || \
+           [ "${{ steps.changes.outputs.inventory_service }}" == "true" ]; then
+
+          echo "Waiting for deployments to be ready..."
+          kubectl wait --for=condition=available --timeout=300s \
+            deployment --all -n pharmacy-system
+        fi
+
+    - name: Get Service Info
+      run: |
+        echo "=== Services ==="
+        kubectl get services -n pharmacy-system
+        echo ""
+        echo "=== Pods ==="
+        kubectl get pods -n pharmacy-system
+        echo ""
+        echo "=== External IP ==="
+        kubectl get service api-gateway -n pharmacy-system -o jsonpath='{.status.loadBalancer.ingress[0].ip}'

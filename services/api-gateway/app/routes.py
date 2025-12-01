@@ -149,6 +149,15 @@ async def search_products(
 
 
 # Order Service Proxy Routes
+@proxy_router.get("/orders")
+async def get_all_orders(
+    request: Request,
+    current_user: User = Depends(get_current_user)
+):
+    """Proxy to Order Service - List all orders."""
+    return await forward_request(request, settings.order_service_url, "orders")
+
+
 @proxy_router.post("/orders")
 async def create_order(
     request: Request,
@@ -186,7 +195,7 @@ async def get_user_orders(
     )
 
 
-@proxy_router.put("/orders/{order_id}/status")
+@proxy_router.patch("/orders/{order_id}/status")
 async def update_order_status(
     request: Request,
     order_id: int,
@@ -201,6 +210,46 @@ async def update_order_status(
 
 
 # Inventory Service Proxy Routes
+@proxy_router.get("/inventory")
+async def get_all_inventory(
+    request: Request,
+    current_user: User = Depends(get_current_user)
+):
+    """Proxy to Inventory Service - List all inventory."""
+    return await forward_request(
+        request,
+        settings.inventory_service_url,
+        "inventory"
+    )
+
+
+@proxy_router.post("/inventory")
+async def create_inventory(
+    request: Request,
+    current_user: User = Depends(get_current_user)
+):
+    """Proxy to Inventory Service - Create new inventory record."""
+    return await forward_request(
+        request,
+        settings.inventory_service_url,
+        "inventory"
+    )
+
+
+@proxy_router.get("/inventory/product/{product_id}")
+async def get_product_inventory(
+    request: Request,
+    product_id: int,
+    current_user: User = Depends(get_current_user)
+):
+    """Proxy to Inventory Service - Get inventory for specific product."""
+    return await forward_request(
+        request,
+        settings.inventory_service_url,
+        f"inventory/{product_id}"
+    )
+
+
 @proxy_router.get("/inventory/{product_id}")
 async def get_inventory(
     request: Request,
