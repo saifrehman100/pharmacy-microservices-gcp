@@ -1,6 +1,25 @@
 # Pharmacy Order Management System - Microservices Architecture
 
+![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.109-green?logo=fastapi)
+![Docker](https://img.shields.io/badge/Docker-Ready-blue?logo=docker)
+![Kubernetes](https://img.shields.io/badge/Kubernetes-GKE-blue?logo=kubernetes)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-blue?logo=postgresql)
+![CI/CD](https://img.shields.io/badge/CI/CD-GitHub_Actions-green?logo=githubactions)
+![License](https://img.shields.io/badge/License-MIT-yellow)
+
 A production-ready, cloud-native microservices application for pharmacy order management, built with FastAPI and deployed on Google Cloud Platform (GKE).
+
+**[Live Demo](http://35.223.190.243/docs)** • **[Architecture](#system-architecture)** • **[Quick Start](#quick-start---local-development)** • **[GCP Deployment](#deployment-to-gcp)**
+
+## 🎯 Key Highlights
+
+✅ **Microservices Architecture** - 4 independent, scalable services
+✅ **Event-Driven** - Real-time inventory updates via Cloud Pub/Sub
+✅ **Auto-Scaling** - Horizontal pod autoscaling (2-10 replicas)
+✅ **Zero-Downtime Deployments** - Rolling updates with health checks
+✅ **Complete CI/CD** - Automated deployment pipeline with GitHub Actions
+✅ **Production-Ready** - Monitoring, logging, and security best practices
 
 ## System Architecture
 
@@ -143,7 +162,7 @@ pharmacy-microservices-gcp/
 
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/saifrehman100/pharmacy-microservices-gcp
 cd pharmacy-microservices-gcp
 
 # Run setup script
