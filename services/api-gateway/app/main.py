@@ -8,6 +8,7 @@ from .config import settings
 from .database import engine, Base
 from .middleware import LoggingMiddleware, RateLimitMiddleware
 from .routes import auth_router, proxy_router
+from .models import User  # Import models to register them with Base
 
 # Configure logging
 logging.basicConfig(

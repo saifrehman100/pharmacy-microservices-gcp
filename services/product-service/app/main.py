@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .config import settings
 from .database import engine, Base
 from .routes import router
+from .models import Product  # Import models to register them with Base
 
 # Configure logging
 logging.basicConfig(

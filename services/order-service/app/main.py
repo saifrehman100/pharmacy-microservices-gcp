@@ -8,6 +8,7 @@ from .config import settings
 from .database import engine, Base
 from .routes import router
 from .pubsub import get_publisher
+from .models import Order  # Import models to register them with Base
 
 # Configure logging
 logging.basicConfig(

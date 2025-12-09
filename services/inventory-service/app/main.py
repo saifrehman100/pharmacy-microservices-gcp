@@ -9,6 +9,7 @@ from .config import settings
 from .database import engine, Base
 from .routes import router
 from .pubsub_subscriber import get_subscriber
+from .models import Inventory  # Import models to register them with Base
 
 # Configure logging
 logging.basicConfig(
