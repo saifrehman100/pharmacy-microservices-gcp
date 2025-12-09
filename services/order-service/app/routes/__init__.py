@@ -13,7 +13,7 @@ router = APIRouter(prefix="/orders", tags=["Orders"])
 
 @router.post("", response_model=OrderResponse, status_code=status.HTTP_201_CREATED)
 async def create_order(order_data: OrderCreate, db: Session = Depends(get_db)):
-    """Create a new order and publish event to Pub/Sub."""
+    """Create a new order and publish event to Pub/Sub"""
     # Calculate total amount
     total_amount = sum(
         product.quantity * product.price

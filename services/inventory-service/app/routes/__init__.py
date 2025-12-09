@@ -18,7 +18,7 @@ router = APIRouter(prefix="/inventory", tags=["Inventory"])
 
 @router.get("/{product_id}", response_model=InventoryResponse)
 async def get_inventory(product_id: int, db: Session = Depends(get_db)):
-    """Get inventory level for a specific product."""
+    """Get inventory level for a specific product"""
     inventory = db.query(Inventory).filter(
         Inventory.product_id == product_id
     ).first()

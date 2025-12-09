@@ -228,7 +228,7 @@ async def create_inventory(
     request: Request,
     current_user: User = Depends(get_current_user)
 ):
-    """Proxy to Inventory Service - Create new inventory record."""
+    """Proxy to Inventory Service - Create new inventory record"""
     return await forward_request(
         request,
         settings.inventory_service_url,

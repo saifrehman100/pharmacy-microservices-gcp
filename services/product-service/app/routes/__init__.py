@@ -24,7 +24,7 @@ async def list_products(
     category: Optional[str] = Query(None, description="Filter by category"),
     db: Session = Depends(get_db)
 ):
-    """List all products with pagination and optional filtering."""
+    """List all products with pagination and optional filtering"""
     # Build query
     query = db.query(Product)
 
