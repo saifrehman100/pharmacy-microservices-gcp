@@ -25,7 +25,7 @@ data:
   INVENTORY_DB_HOST: "inventory-db-service"
 
   # GCP Configuration
-  GCP_PROJECT_ID: "your-gcp-project-id"
+  GCP_PROJECT_ID: "pharmacy-ms-458074"
   PUBSUB_ORDER_TOPIC: "order-events"
   PUBSUB_ORDER_SUBSCRIPTION: "inventory-order-subscription"
 
