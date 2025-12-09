@@ -144,7 +144,7 @@ jobs:
     # Deploy to GKE
     - name: Deploy to GKE
       run: |
-        # Apply K8s manifests
+        # Apply base K8s manifests
         kubectl apply -f k8s/base/namespace.yaml
         kubectl apply -f k8s/base/configmap.yaml
         kubectl apply -f k8s/base/service-account.yaml
@@ -152,19 +152,31 @@ jobs:
 
         # Deploy services (if changed)
         if [ "${{ steps.changes.outputs.api_gateway }}" == "true" ]; then
-          kubectl rollout restart deployment api-gateway -n pharmacy-system
+          kubectl apply -f k8s/base/api-gateway-deployment.yaml
+          kubectl set image deployment/api-gateway \
+            api-gateway=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/api-gateway:${{ github.sha }} \
+            -n pharmacy-system
         fi
 
         if [ "${{ steps.changes.outputs.product_service }}" == "true" ]; then
-          kubectl rollout restart deployment product-service -n pharmacy-system
+          kubectl apply -f k8s/base/product-service-deployment.yaml
+          kubectl set image deployment/product-service \
+            product-service=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/product-service:${{ github.sha }} \
+            -n pharmacy-system
         fi
 
         if [ "${{ steps.changes.outputs.order_service }}" == "true" ]; then
-          kubectl rollout restart deployment order-service -n pharmacy-system
+          kubectl apply -f k8s/base/order-service-deployment.yaml
+          kubectl set image deployment/order-service \
+            order-service=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/order-service:${{ github.sha }} \
+            -n pharmacy-system
         fi
 
         if [ "${{ steps.changes.outputs.inventory_service }}" == "true" ]; then
-          kubectl rollout restart deployment inventory-service -n pharmacy-system
+          kubectl apply -f k8s/base/inventory-service-deployment.yaml
+          kubectl set image deployment/inventory-service \
+            inventory-service=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/inventory-service:${{ github.sha }} \
+            -n pharmacy-system
         fi
 
     # Wait for deployments to be ready
