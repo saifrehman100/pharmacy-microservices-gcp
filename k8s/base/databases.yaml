@@ -1,4 +1,17 @@
 ---
+# Gateway Database PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gateway-db-pvc
+  namespace: pharmacy-system
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---
 # Gateway Database
 apiVersion: apps/v1
 kind: Deployment
@@ -25,8 +38,17 @@ spec:
           value: postgres
         - name: POSTGRES_PASSWORD
           value: postgres
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
         ports:
         - containerPort: 5432
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+      volumes:
+      - name: postgres-storage
+        persistentVolumeClaim:
+          claimName: gateway-db-pvc
 ---
 apiVersion: v1
 kind: Service
@@ -39,6 +61,19 @@ spec:
   ports:
   - port: 5432
     targetPort: 5432
+---
+# Product Database PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: product-db-pvc
+  namespace: pharmacy-system
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
 ---
 # Product Database
 apiVersion: apps/v1
@@ -66,8 +101,17 @@ spec:
           value: postgres
         - name: POSTGRES_PASSWORD
           value: postgres
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
         ports:
         - containerPort: 5432
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+      volumes:
+      - name: postgres-storage
+        persistentVolumeClaim:
+          claimName: product-db-pvc
 ---
 apiVersion: v1
 kind: Service
@@ -80,6 +124,19 @@ spec:
   ports:
   - port: 5432
     targetPort: 5432
+---
+# Order Database PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: order-db-pvc
+  namespace: pharmacy-system
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
 ---
 # Order Database
 apiVersion: apps/v1
@@ -107,8 +164,17 @@ spec:
           value: postgres
         - name: POSTGRES_PASSWORD
           value: postgres
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
         ports:
         - containerPort: 5432
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+      volumes:
+      - name: postgres-storage
+        persistentVolumeClaim:
+          claimName: order-db-pvc
 ---
 apiVersion: v1
 kind: Service
@@ -121,6 +187,19 @@ spec:
   ports:
   - port: 5432
     targetPort: 5432
+---
+# Inventory Database PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: inventory-db-pvc
+  namespace: pharmacy-system
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
 ---
 # Inventory Database
 apiVersion: apps/v1
@@ -148,8 +227,17 @@ spec:
           value: postgres
         - name: POSTGRES_PASSWORD
           value: postgres
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
         ports:
         - containerPort: 5432
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+      volumes:
+      - name: postgres-storage
+        persistentVolumeClaim:
+          claimName: inventory-db-pvc
 ---
 apiVersion: v1
 kind: Service
