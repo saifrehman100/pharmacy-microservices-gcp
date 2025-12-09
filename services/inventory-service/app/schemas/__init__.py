@@ -4,7 +4,7 @@ from datetime import datetime
 
 
 class InventoryBase(BaseModel):
-    """Base inventory schema."""
+    """Base inventory schema"""
     product_id: int = Field(..., gt=0)
     quantity: int = Field(..., ge=0)
     reorder_level: int = Field(default=10, ge=0)

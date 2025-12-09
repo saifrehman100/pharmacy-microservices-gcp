@@ -1,11 +1,11 @@
-"""Pydantic schemas for request/response validation."""
+"""Pydantic schemas for request/response validation"""
 from pydantic import BaseModel, Field
 from typing import Optional
 from datetime import datetime
 
 
 class ProductBase(BaseModel):
-    """Base product schema."""
+    """Base product schema"""
     name: str = Field(..., min_length=1, max_length=255)
     description: Optional[str] = None
     price: float = Field(..., gt=0)

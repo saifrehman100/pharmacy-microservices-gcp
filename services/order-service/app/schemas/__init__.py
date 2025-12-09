@@ -1,4 +1,4 @@
-"""Pydantic schemas for request/response validation."""
+"""Pydantic schemas for request/response validation"""
 from pydantic import BaseModel, Field
 from typing import List, Optional
 from datetime import datetime
