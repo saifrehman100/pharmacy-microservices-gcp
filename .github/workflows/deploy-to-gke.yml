@@ -8,6 +8,13 @@ on:
       - 'services/**'
       - 'k8s/**'
       - '.github/workflows/**'
+  workflow_dispatch:
+    inputs:
+      deploy_all:
+        description: 'Deploy all services (ignore change detection)'
+        required: false
+        type: boolean
+        default: false
 
 env:
   PROJECT_ID: pharmacy-ms-458074
@@ -57,9 +64,16 @@ jobs:
       run: |
         echo "Detecting changed services..."
 
-        # Get list of changed files
-        if [ "${{ github.event.before }}" == "0000000000000000000000000000000000000000" ]; then
+        # Check if manual deploy all was triggered
+        if [ "${{ github.event.inputs.deploy_all }}" == "true" ]; then
+          echo "Manual deployment of all services requested"
+          echo "api_gateway=true" >> $GITHUB_OUTPUT
+          echo "product_service=true" >> $GITHUB_OUTPUT
+          echo "order_service=true" >> $GITHUB_OUTPUT
+          echo "inventory_service=true" >> $GITHUB_OUTPUT
+        elif [ "${{ github.event.before }}" == "0000000000000000000000000000000000000000" ]; then
           # First push - build all services
+          echo "First push - deploying all services"
           echo "api_gateway=true" >> $GITHUB_OUTPUT
           echo "product_service=true" >> $GITHUB_OUTPUT
           echo "order_service=true" >> $GITHUB_OUTPUT
@@ -67,21 +81,26 @@ jobs:
         else
           # Check which services changed
           CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+          echo "Changed files: $CHANGED_FILES"
 
           if echo "$CHANGED_FILES" | grep -q "services/api-gateway/"; then
             echo "api_gateway=true" >> $GITHUB_OUTPUT
+            echo "API Gateway changed"
           fi
 
           if echo "$CHANGED_FILES" | grep -q "services/product-service/"; then
             echo "product_service=true" >> $GITHUB_OUTPUT
+            echo "Product Service changed"
           fi
 
           if echo "$CHANGED_FILES" | grep -q "services/order-service/"; then
             echo "order_service=true" >> $GITHUB_OUTPUT
+            echo "Order Service changed"
           fi
 
           if echo "$CHANGED_FILES" | grep -q "services/inventory-service/"; then
             echo "inventory_service=true" >> $GITHUB_OUTPUT
+            echo "Inventory Service changed"
           fi
         fi
 
