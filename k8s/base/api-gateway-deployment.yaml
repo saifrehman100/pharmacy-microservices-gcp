@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
       - name: api-gateway
-        image: gcr.io/YOUR_PROJECT_ID/api-gateway:latest
+        image: us-central1-docker.pkg.dev/pharmacy-ms-458074/pharmacy-services/api-gateway:latest
         ports:
         - containerPort: 8000
           name: http

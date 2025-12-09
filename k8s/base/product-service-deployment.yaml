@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
       - name: product-service
-        image: gcr.io/YOUR_PROJECT_ID/product-service:latest
+        image: us-central1-docker.pkg.dev/pharmacy-ms-458074/pharmacy-services/product-service:latest
         ports:
         - containerPort: 8001
           name: http

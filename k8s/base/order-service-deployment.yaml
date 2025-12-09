@@ -20,7 +20,7 @@ spec:
       serviceAccountName: pubsub-service-account
       containers:
       - name: order-service
-        image: gcr.io/YOUR_PROJECT_ID/order-service:latest
+        image: us-central1-docker.pkg.dev/pharmacy-ms-458074/pharmacy-services/order-service:latest
         ports:
         - containerPort: 8002
           name: http

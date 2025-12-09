@@ -20,7 +20,7 @@ spec:
       serviceAccountName: pubsub-service-account
       containers:
       - name: inventory-service
-        image: gcr.io/YOUR_PROJECT_ID/inventory-service:latest
+        image: us-central1-docker.pkg.dev/pharmacy-ms-458074/pharmacy-services/inventory-service:latest
         ports:
         - containerPort: 8003
           name: http
